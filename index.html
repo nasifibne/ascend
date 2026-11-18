@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ascend</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0f1a;--card:#161a2b;--card2:#1d2238;--line:#2a3050;--text:#eef0ff;--muted:#8d93b8;
+  --acc:#ff8a3d;--acc2:#ffc857;--good:#4ade80;--bad:#f87171;--blue:#7c9cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Outfit,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:440px;min-height:100vh;display:flex;flex-direction:column;position:relative;padding-bottom:78px}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 6px}
+header h1{font-size:20px;font-weight:800;letter-spacing:.5px}
+header h1 span{color:var(--acc)}
+.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--text);width:38px;height:38px;border-radius:12px;font-size:17px;cursor:pointer}
+main{flex:1;padding:8px 18px}
+.view{display:none;animation:fade .3s}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px}
+.avatar-wrap{position:relative;display:flex;flex-direction:column;align-items:center;padding:10px 0 4px}
+#avatar{width:250px;height:280px;transition:filter .8s}
+.swatch{width:36px;height:36px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.swatch.sel{border-color:var(--acc)}
+.pick{flex:1;padding:12px 6px;border-radius:14px;background:var(--card2);border:2px solid var(--line);color:var(--text);font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px}
+.pick.sel{border-color:var(--acc)}
+.pick svg{width:70px;height:90px}
+.stage-name{font-size:24px;font-weight:800;margin-top:2px}
+.stage-sub{color:var(--muted);font-size:13px;margin-top:2px}
+.bar{height:9px;background:var(--card2);border-radius:9px;overflow:hidden;margin-top:6px}
+.bar>div{height:100%;border-radius:9px;transition:width .8s}
+.row{display:flex;gap:10px}
+.stat{flex:1;background:var(--card2);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:24px}
+.stat small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.8px}
+.lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:10px}
+.urge{width:100%;padding:18px;border:none;border-radius:18px;font-family:inherit;font-size:18px;font-weight:800;color:#1a1000;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));cursor:pointer;box-shadow:0 8px 30px #ff8a3d40;margin-bottom:10px}
+.urge:active{transform:scale(.98)}
+.ghost{width:100%;padding:12px;border-radius:14px;background:transparent;border:1px solid var(--line);color:var(--muted);font-family:inherit;font-size:14px;cursor:pointer}
+.btn{padding:12px 16px;border-radius:14px;border:none;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.btn.pri{background:var(--acc);color:#1a1000;border:none}
+.btn.good{background:var(--good);color:#04210f;border:none}
+.btn.full{width:100%}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;display:flex;background:#0d0f1af0;backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:8px 8px 12px}
+nav button{flex:1;background:none;border:none;color:var(--muted);font-family:inherit;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px}
+nav button .i{font-size:20px}
+nav button.on{color:var(--acc)}
+h2{font-size:17px;margin-bottom:10px}
+h3{font-size:14px;color:var(--muted);font-weight:600;margin:4px 0 10px;text-transform:uppercase;letter-spacing:.8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip{padding:9px 13px;border-radius:30px;background:var(--card2);border:1px solid var(--line);color:var(--text);font-family:inherit;font-size:14px;cursor:pointer}
+.chip.sel{background:var(--acc);color:#1a1000;border-color:var(--acc);font-weight:600}
+.modal{position:fixed;inset:0;background:#05060cdd;display:none;align-items:flex-end;justify-content:center;z-index:20}
+.modal.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:440px;border-radius:26px 26px 0 0;padding:22px 20px 30px;max-height:92vh;overflow:auto;animation:up .3s}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.ex{display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer;width:100%;text-align:left;color:var(--text);font-family:inherit}
+.ex .e{font-size:26px}
+.ex b{display:block;font-size:15px}
+.ex small{color:var(--muted)}
+.breath{width:190px;height:190px;border-radius:50%;margin:16px auto;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle,var(--acc2),var(--acc) 60%,transparent 72%);font-weight:800;font-size:18px;color:#1a1000;transition:transform 4s ease-in-out}
+.timer{font-size:46px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
+.center{text-align:center}
+.muted{color:var(--muted);font-size:14px;line-height:1.5}
+.hist{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.hist:last-child{border:none}
+.tag{font-size:12px;padding:3px 9px;border-radius:20px}
+.tag.w{background:#4ade8022;color:var(--good)}.tag.l{background:#f8717122;color:var(--bad)}
+.hbar{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+.hbar span:first-child{width:86px;color:var(--muted)}
+.hbar .t{flex:1;height:10px;background:var(--card2);border-radius:6px;overflow:hidden}
+.hbar .t div{height:100%;background:var(--acc);border-radius:6px}
+.hours{display:flex;align-items:flex-end;gap:2px;height:80px;margin-top:6px}
+.hours div{flex:1;background:var(--blue);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.hlab{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}
+input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-family:inherit;font-size:16px;margin-bottom:10px}
+.lock{position:fixed;inset:0;background:var(--bg);z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.lock.show{display:flex}
+.dots{display:flex;gap:14px}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted)}
+.dots i.f{background:var(--acc);border-color:var(--acc)}
+.pad{display:grid;grid-template-columns:repeat(3,70px);gap:12px}
+.pad button{height:70px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--text);font-size:24px;font-family:inherit;cursor:pointer}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card2);border:1px solid var(--acc);padding:12px 18px;border-radius:14px;z-index:50;transition:transform .4s;font-size:14px;max-width:90%}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.quote{font-style:italic;color:var(--muted);text-align:center;font-size:14px;padding:4px 8px 0}
+.demo{border-style:dashed}
+.clock{display:flex;gap:8px;justify-content:center;margin:6px 0 4px}
+.clock div{flex:1;background:var(--card2);border-radius:14px;padding:10px 4px;text-align:center}
+.clock b{display:block;font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.clock small{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1px}
+.clock div:first-child b{color:var(--acc)}
+.since{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-top:8px}
+.link{background:none;border:none;color:var(--acc);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes flick{50%{transform:scaleY(1.12) translateY(-2px)}}
+.bob{animation:bob 3s ease-in-out infinite;transform-origin:center}
+.flick{animation:flick 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom center}
+.spin{animation:spin 18s linear infinite;transform-origin:125px 125px}
+.celebrate{animation:pop .8s}
+@keyframes pop{30%{transform:scale(1.15)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Asc<span>end</span></h1>
+    <button class="iconbtn" onclick="go('settings')" aria-label="Settings">⚙︎</button>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section class="view active" id="v-home">
+      <div class="card">
+        <div class="avatar-wrap">
+          <svg id="avatar" viewBox="0 0 250 250"></svg>
+          <div class="stage-name" id="stageName">Ember</div>
+          <div class="stage-sub" id="stageSub">Level 1</div>
+        </div>
+        <div class="lbl"><span>XP to next form</span><span id="xpTxt"></span></div>
+        <div class="bar"><div id="xpBar" style="background:linear-gradient(90deg,var(--acc),var(--acc2))"></div></div>
+        <div class="lbl"><span>Vitality</span><span id="vitTxt"></span></div>
+        <div class="bar"><div id="vitBar" style="background:linear-gradient(90deg,#34d399,#4ade80)"></div></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:6px">Clean for</h3>
+        <div class="clock"><div><b id="cD">0</b><small>days</small></div><div><b id="cH">00</b><small>hrs</small></div><div><b id="cM">00</b><small>min</small></div><div><b id="cS">00</b><small>sec</small></div></div>
+        <div class="lbl"><span id="msTxt">Next milestone</span><span id="msPct"></span></div>
+        <div class="bar"><div id="msBar" style="background:linear-gradient(90deg,var(--blue),#a78bfa)"></div></div>
+        <div class="since"><span id="sinceTxt"></span><button class="link" onclick="editStart()">Edit start date</button></div>
+      </div>
+      <div class="row" style="margin-bottom:14px">
+        <div class="stat"><b id="sStreak">0</b><small>Day streak</small></div>
+        <div class="stat"><b id="sBest">0</b><small>Best</small></div>
+        <div class="stat"><b id="sBeaten">0</b><small>Urges beaten</small></div>
+      </div>
+      <button class="urge" onclick="openUrge()">⚡ I'm having an urge</button>
+      <p class="quote" id="quote"></p>
+      <div style="height:14px"></div>
+      <button class="ghost" onclick="openRelapse()">I slipped up</button>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section class="view" id="v-insights">
+      <div class="card">
+        <h3>Your triggers</h3>
+        <div id="trigBars"></div>
+      </div>
+      <div class="card">
+        <h3>When urges hit</h3>
+        <div class="hours" id="hours"></div>
+        <div class="hlab"><span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span></div>
+      </div>
+      <div class="card">
+        <h3>Win rate</h3>
+        <div class="row">
+          <div class="stat"><b id="iRate">–</b><small>Urges beaten</small></div>
+          <div class="stat"><b id="iTotal">0</b><small>Total urges</small></div>
+          <div class="stat"><b id="iRel">0</b><small>Slips</small></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>History</h3>
+        <div id="history"></div>
+      </div>
+    </section>
+
+    <!-- PARTNER -->
+    <section class="view" id="v-partner">
+      <div class="card">
+        <h2>Accountability partner</h2>
+        <p class="muted">Share only your avatar's state with a trusted friend: form, level and vitality. No triggers, no history, no details.</p>
+      </div>
+      <div class="card center">
+        <svg id="avatarMini" viewBox="0 0 250 250" style="width:140px;height:140px"></svg>
+        <div id="shareText" class="muted" style="margin:8px 0 14px;color:var(--text)"></div>
+        <button class="btn pri full" onclick="copyShare()">Copy status message</button>
+      </div>
+      <div class="card">
+        <h3>How it works</h3>
+        <p class="muted">Send this to your partner every few days. If your vitality drops, they'll know to check in — without you having to explain anything.</p>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="v-settings">
+      <div class="card">
+        <h2>Your avatar</h2>
+        <div id="avatarPicker"></div>
+      </div>
+      <div class="card">
+        <h2>Privacy lock</h2>
+        <p class="muted" style="margin-bottom:12px">Set a 4-digit PIN. The app will ask for it each time it opens.</p>
+        <input id="pinIn" type="password" inputmode="numeric" maxlength="4" placeholder="New 4-digit PIN">
+        <div class="row"><button class="btn pri" style="flex:1" onclick="setPin()">Save PIN</button><button class="btn" style="flex:1" onclick="clearPin()">Remove PIN</button></div>
+      </div>
+      <div class="card demo">
+        <h2>Prototype tools</h2>
+        <p class="muted" style="margin-bottom:12px">For testing only: fast-forward time to watch the avatar evolve.</p>
+        <div class="row"><button class="btn" style="flex:1" onclick="skip(1)">+1 day</button><button class="btn" style="flex:1" onclick="skip(7)">+7 days</button><button class="btn" style="flex:1" onclick="skip(30)">+30 days</button></div>
+      </div>
+      <div class="card">
+        <h2>Reset</h2>
+        <p class="muted" style="margin-bottom:12px">Erase all progress on this device.</p>
+        <button class="btn full" style="color:var(--bad)" onclick="askReset()">Reset everything</button>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="on" data-v="home" onclick="go('home')"><span class="i">◉</span>Avatar</button>
+    <button data-v="insights" onclick="go('insights')"><span class="i">▤</span>Insights</button>
+    <button data-v="partner" onclick="go('partner')"><span class="i">⚭</span>Partner</button>
+    <button data-v="settings" onclick="go('settings')"><span class="i">⚙︎</span>Settings</button>
+  </nav>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this&&!busy)closeModal()"><div class="sheet" id="sheet"></div></div>
+<div class="lock" id="lock">
+  <h1 style="font-size:22px">Asc<span style="color:var(--acc)">end</span></h1>
+  <div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+  <div class="pad" id="pad"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- state ----------
+const KEY='ascend_v1';
+const STAGES=[
+  {n:'Ember',xp:0,c1:'#ff9a5a',c2:'#c2410c'},
+  {n:'Spark',xp:60,c1:'#ffb347',c2:'#ea580c'},
+  {n:'Kindle',xp:160,c1:'#ffc857',c2:'#f97316'},
+  {n:'Flame',xp:320,c1:'#ffd166',c2:'#ef4444'},
+  {n:'Blaze',xp:560,c1:'#fde68a',c2:'#e11d48'},
+  {n:'Phoenix',xp:900,c1:'#fef3c7',c2:'#db2777'},
+  {n:'Sun',xp:1400,c1:'#fffbeb',c2:'#f59e0b'}
+];
+const TRIGGERS=['Bored','Stressed','Lonely','Late night','Scrolling','Tired','In bed','Sad'];
+const QUOTES=['The urge is a wave. It peaks and passes.','You don\'t have to win the day. Just this moment.','Every urge you beat makes the next one weaker.','Discipline is choosing what you want most over what you want now.','Feelings are visitors. Let them come and go.'];
+let S, busy=false;
+const DAY=864e5;
+function fresh(){return{start:Date.now(),lastTick:Date.now(),xp:0,vit:70,best:0,urges:[],slips:[],offset:0,pin:null}}
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){S=fresh()}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const now=()=>Date.now()+S.offset*DAY;
+const dayNo=t=>{const d=new Date(t);return Math.floor((t-d.getTimezoneOffset()*6e4)/DAY)};
+const streak=()=>Math.max(0,Math.floor((now()-S.start)/DAY));
+function stageIdx(){let i=0;STAGES.forEach((s,k)=>{if(S.xp>=s.xp)i=k});return i}
+
+function tick(){ // award daily XP for each clean day passed
+  const d=Math.floor((now()-S.lastTick)/DAY);
+  if(d>0){
+    const before=stageIdx();
+    S.xp+=d*12; S.vit=Math.min(100,S.vit+d*6); S.lastTick+=d*DAY;
+    S.best=Math.max(S.best,streak());
+    if(stageIdx()>before) setTimeout(()=>toast('✨ Your avatar evolved into '+STAGES[stageIdx()].n+'!'),400);
+    save();
+  }
+}
+
+// ---------- avatar ----------
+const SKINS=['#f6d7b8','#e8b98a','#c98e5f','#9a6440','#6b4127'];
+const HAIR=['#2b1d14','#1a1a1a','#3d2817','#1a1a1a','#0f0f0f'];
+function avatarSVG(stage,vit,mini,styleOverride){
+  const st=styleOverride||S.style||'man';
+  return st==='spirit'?spiritSVG(stage,vit,mini):humanSVG(stage,vit,mini,st,S.skin??1);
+}
+function viewBoxFor(st){return (st||S.style||'man')==='spirit'?'0 0 250 250':'0 0 200 300'}
+
+function humanSVG(stage,vit,mini,gender,skinI){
+  const fem=gender==='woman',low=vit<35,strong=vit>=70,id=Math.random().toString(36).slice(2,8);
+  const skin=SKINS[skinI],hair=HAIR[skinI],s=STAGES[stage];
+  const shirt=['#6b7280','#3b82f6','#0891b2','#1f2937','#111827','#7f1d1d','#92400e'][stage];
+  const pants=['#4b5563','#1f2937','#1e293b','#111827','#0f172a','#1c1917','#451a03'][stage];
+  const sw=(fem?26:30)+stage*(fem?1.2:2.3), wa=(fem?18:23)+stage*(fem?.3:1.1), hip=fem?27:wa;
+  const aw=(fem?10:11.5)+stage*(fem?.5:1.1), dy=low?7:0, hx=100;
+  // arm pose: slouched, relaxed, or confident hands-on-hips
+  const pose=low?'slouch':(strong&&stage>=3?'proud':'relax');
+  const arm=side=>{
+    const k=side, shx=hx+k*(sw-7), shy=100+(low?4:0);
+    let ex,ey,hx2,hy;
+    if(pose==='proud'){ex=hx+k*(sw+20);ey=136;hx2=hx+k*(wa+3);hy=166}
+    else if(pose==='slouch'){ex=hx+k*(sw-1);ey=146;hx2=hx+k*(sw-6);hy=190}
+    else{ex=hx+k*(sw+5);ey=141;hx2=hx+k*(sw+3);hy=182}
+    const fore=stage>=4?shirt:skin;
+    return `<line x1="${shx}" y1="${shy}" x2="${ex}" y2="${ey}" stroke="${shirt}" stroke-width="${aw}" stroke-linecap="round"/>
+      <line x1="${ex}" y1="${ey}" x2="${hx2}" y2="${hy}" stroke="${fore}" stroke-width="${aw-2}" stroke-linecap="round"/>
+      ${stage>=4?`<line x1="${ex+(hx2-ex)*.8}" y1="${ey+(hy-ey)*.8}" x2="${hx2}" y2="${hy}" stroke="${s.c1}" stroke-width="${aw-1}" stroke-linecap="butt"/>`:''}
+      <circle cx="${hx2}" cy="${hy+2}" r="${aw*.55}" fill="${skin}"/>`;
+  };
+  let g=`<defs><radialGradient id="ha${id}"><stop offset="0" stop-color="${s.c1}" stop-opacity="${.5*vit/100+.08}"/><stop offset="1" stop-color="${s.c2}" stop-opacity="0"/></radialGradient></defs>`;
+  g+=`<circle cx="100" cy="160" r="${78+stage*9}" fill="url(#ha${id})"/>`;
+  if(stage>=6)g+=`<g style="animation:spin 18s linear infinite;transform-origin:100px 150px"><circle cx="100" cy="150" r="96" fill="none" stroke="${s.c1}" stroke-width="2" stroke-dasharray="4 10" opacity=".7"/></g>`;
+  g+=`<g class="bob">`;
+  // cape
+  if(stage>=5)g+=`<path d="M${hx-sw+4} 96 L${hx+sw-4} 96 L${hx+sw+16} 262 Q100 250 ${hx-sw-16} 262Z" fill="${s.c2}" opacity=".9"/>`;
+  // long hair behind (woman)
+  if(fem)g+=`<g transform="translate(0 ${dy})"><path d="M77 62 Q73 33 100 34 Q127 33 123 62 L127 116 Q100 124 73 116Z" fill="${hair}"/></g>`;
+  // legs
+  const lp=fem?hip:wa;
+  g+=`<path d="M${hx-lp} 170 L${hx+lp} 170 L${hx+lp-3} 266 L103 266 L100 204 L97 266 L${hx-lp+3} 266Z" fill="${pants}"/>`;
+  const shoe=stage>=1?(stage>=5?s.c2:'#e5e7eb'):'#374151';
+  g+=`<ellipse cx="${(hx-lp+3+97)/2-2}" cy="270" rx="${(97-(hx-lp+3))/2+5}" ry="7" fill="${shoe}"/><ellipse cx="${(103+hx+lp-3)/2+2}" cy="270" rx="${(hx+lp-3-103)/2+5}" ry="7" fill="${shoe}"/>`;
+  // neck
+  g+=`<rect x="92" y="${74+dy}" width="16" height="${20-dy}" rx="4" fill="${skin}"/>`;
+  // torso
+  const top=88+(low?4:0);
+  g+=fem
+    ?`<path d="M${hx-sw} ${top+12} Q${hx-sw} ${top+2} ${hx-sw+12} ${top} L${hx+sw-12} ${top} Q${hx+sw} ${top+2} ${hx+sw} ${top+12} L${hx+wa} 148 L${hx+hip} 176 L${hx-hip} 176 L${hx-wa} 148Z" fill="${shirt}"/>`
+    :`<path d="M${hx-sw} ${top+12} Q${hx-sw} ${top+2} ${hx-sw+12} ${top} L${hx+sw-12} ${top} Q${hx+sw} ${top+2} ${hx+sw} ${top+12} L${hx+wa} 176 L${hx-wa} 176Z" fill="${shirt}"/>`;
+  g+=`<path d="M91 ${top} Q100 ${top+10} 109 ${top}" fill="${skin}"/>`;
+  if(stage>=4)g+=`<line x1="100" y1="${top+8}" x2="100" y2="174" stroke="${s.c1}" stroke-width="2.5"/><path d="M${hx-sw+3} ${top+8} L${hx-sw+10} ${top+3}" stroke="${s.c1}" stroke-width="3"/><path d="M${hx+sw-3} ${top+8} L${hx+sw-10} ${top+3}" stroke="${s.c1}" stroke-width="3"/>`;
+  if(stage>=2&&stage<6)g+=`<path d="M${hx+sw*.42} 104 c-4 6 -4 12 2 14 c6 -2 6 -8 2 -14 c0 4 -2 6 -2 6 c0 -2 -1 -4 -2 -6z" fill="${s.c1}"/>`;
+  if(stage>=6)g+=`<path d="M${hx-sw+8} ${top+10} L${hx+sw-8} ${top+10} L${hx+wa-3} 150 L100 160 L${hx-wa+3} 150Z" fill="#fbbf24" stroke="#b45309" stroke-width="2"/><circle cx="100" cy="122" r="7" fill="${s.c2}"/>`;
+  g+=`<rect x="${hx-(fem?hip:wa)}" y="168" width="${(fem?hip:wa)*2}" height="6" fill="#1c1917" opacity=".7"/>`;
+  g+=arm(-1)+arm(1);
+  // head
+  g+=`<g transform="translate(0 ${dy})">`;
+  g+=`<circle cx="78" cy="64" r="5" fill="${skin}"/><circle cx="122" cy="64" r="5" fill="${skin}"/><circle cx="100" cy="60" r="22" fill="${skin}"/>`;
+  g+=fem?`<path d="M78 60 Q79 36 100 37 Q121 36 122 60 Q113 45 97 49 Q86 52 78 60Z" fill="${hair}"/>`
+        :`<path d="M78 60 Q76 35 100 35 Q124 35 122 60 Q118 46 100 46 Q84 46 78 60Z" fill="${hair}"/>`;
+  if(fem)g+=`<path d="M78 56 Q71 84 77 112 L87 110 Q82 84 84 58Z" fill="${hair}"/><path d="M122 56 Q129 84 123 112 L113 110 Q118 84 116 58Z" fill="${hair}"/>`;
+  if(stage>=3)g+=`<rect x="78" y="47" width="44" height="6" rx="3" fill="${s.c2}"/>`;
+  if(low){g+=`<path d="M88 63 q4 3 8 0 M104 63 q4 3 8 0" stroke="#2a1a12" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M93 76 Q100 71 107 76" stroke="#2a1a12" stroke-width="2.5" fill="none" stroke-linecap="round"/>`}
+  else{g+=`<ellipse cx="92" cy="62" rx="2.8" ry="3.4" fill="#2a1a12"/><ellipse cx="108" cy="62" rx="2.8" ry="3.4" fill="#2a1a12"/>
+    <path d="M87 ${strong?55:56} L96 ${strong?54:56} M104 ${strong?54:56} L113 ${strong?55:56}" stroke="${hair}" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M93 72 Q100 ${strong?79:76} 107 72" stroke="#2a1a12" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+    if(fem)g+=`<circle cx="87" cy="70" r="3.5" fill="#ff8a80" opacity=".35"/><circle cx="113" cy="70" r="3.5" fill="#ff8a80" opacity=".35"/>`}
+  g+=`</g></g>`;
+  if(stage>=3&&!low){for(let i=0;i<stage;i++){const a=i/stage*6.28;g+=`<circle cx="${100+Math.cos(a)*88}" cy="${155+Math.sin(a)*100}" r="${2+i%2}" fill="${s.c1}" opacity=".8"><animate attributeName="opacity" values=".2;1;.2" dur="${1.5+i*.3}s" repeatCount="indefinite"/></circle>`}}
+  return g;
+}
+
+function spiritSVG(stage,vit,mini){
+  const s=STAGES[stage],v=vit/100,low=vit<35,u=Math.random().toString(36).slice(2,8);
+  const sc=0.8+stage*0.05;
+  let g=`<defs>
+   <radialGradient id="aura${u}"><stop offset="0" stop-color="${s.c1}" stop-opacity="${.55*v+.1}"/><stop offset="1" stop-color="${s.c2}" stop-opacity="0"/></radialGradient>
+   <radialGradient id="body${u}" cx=".45" cy=".35"><stop offset="0" stop-color="${s.c1}"/><stop offset="1" stop-color="${s.c2}"/></radialGradient></defs>`;
+  g+=`<circle cx="125" cy="130" r="${70+stage*9}" fill="url(#aura${u})"/>`;
+  if(stage>=6) g+=`<g class="spin"><circle cx="125" cy="125" r="112" fill="none" stroke="${s.c1}" stroke-width="2" stroke-dasharray="4 10" opacity=".7"/><circle cx="125" cy="125" r="100" fill="none" stroke="${s.c2}" stroke-width="1.5" stroke-dasharray="20 14" opacity=".6"/></g>`;
+  g+=`<g class="bob"><g transform="translate(125 135) scale(${sc}) translate(-125 -135)">`;
+  // wings
+  if(stage>=5){g+=`<path d="M85 140 C40 110 30 70 45 60 C60 95 75 105 92 118Z" fill="${s.c2}" opacity=".85"/><path d="M165 140 C210 110 220 70 205 60 C190 95 175 105 158 118Z" fill="${s.c2}" opacity=".85"/>`}
+  else if(stage>=4){g+=`<path d="M88 138 C60 120 55 95 62 88 C72 108 80 116 94 124Z" fill="${s.c2}" opacity=".8"/><path d="M162 138 C190 120 195 95 188 88 C178 108 170 116 156 124Z" fill="${s.c2}" opacity=".8"/>`}
+  // flame crest
+  if(stage>=1){const h=18+stage*7;g+=`<path class="flick" d="M110 ${88} C108 ${88-h*.6} 120 ${88-h} 125 ${88-h} C128 ${88-h*.7} 142 ${88-h*.5} 140 88 Z" fill="${s.c1}"/>`}
+  if(stage>=3){g+=`<path class="flick" d="M100 96 C96 80 104 72 108 70 C108 80 112 86 114 92Z" fill="${s.c2}"/><path class="flick" d="M150 96 C154 80 146 72 142 70 C142 80 138 86 136 92Z" fill="${s.c2}"/>`}
+  // body
+  g+=`<path d="M125 82 C165 82 178 120 175 150 C172 185 150 198 125 198 C100 198 78 185 75 150 C72 120 85 82 125 82Z" fill="url(#body${u})"/>`;
+  // arms
+  if(stage>=2){g+=`<ellipse cx="74" cy="158" rx="11" ry="16" fill="${s.c2}" transform="rotate(${low?10:-25} 74 158)"/><ellipse cx="176" cy="158" rx="11" ry="16" fill="${s.c2}" transform="rotate(${low?-10:25} 176 158)"/>`}
+  // face
+  if(low){g+=`<path d="M103 138 q8 5 16 0" stroke="#3b0f05" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M131 138 q8 5 16 0" stroke="#3b0f05" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M114 168 q11 -6 22 0" stroke="#3b0f05" stroke-width="3.5" fill="none" stroke-linecap="round"/>`}
+  else{g+=`<ellipse cx="110" cy="138" rx="8" ry="${vit>75?11:9}" fill="#2a0c04"/><ellipse cx="140" cy="138" rx="8" ry="${vit>75?11:9}" fill="#2a0c04"/><circle cx="113" cy="134" r="3" fill="#fff"/><circle cx="143" cy="134" r="3" fill="#fff"/>
+    <path d="M112 162 q13 ${vit>75?12:7} 26 0" stroke="#2a0c04" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <circle cx="96" cy="156" r="6" fill="#ff6b6b" opacity=".35"/><circle cx="154" cy="156" r="6" fill="#ff6b6b" opacity=".35"/>`}
+  // crown
+  if(stage>=5){g+=`<path d="M105 92 L110 74 L118 86 L125 68 L132 86 L140 74 L145 92Z" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>`}
+  g+=`</g></g>`;
+  // sparks
+  if(stage>=3&&!low){for(let i=0;i<stage;i++){const a=i/stage*6.28,r=95;g+=`<circle cx="${125+Math.cos(a)*r}" cy="${125+Math.sin(a)*r*.7}" r="${2+i%2}" fill="${s.c1}" opacity=".8"><animate attributeName="opacity" values=".2;1;.2" dur="${1.5+i*.3}s" repeatCount="indefinite"/></circle>`}}
+  return g;
+}
+
+// ---------- render ----------
+function render(){
+  tick();
+  const st=stageIdx(),s=STAGES[st],nx=STAGES[st+1];
+  const av=document.getElementById('avatar');
+  av.setAttribute('viewBox',viewBoxFor());av.innerHTML=avatarSVG(st,S.vit);
+  av.style.filter=`saturate(${.25+S.vit/100*.85}) brightness(${.6+S.vit/100*.45})`;
+  document.getElementById('stageName').textContent=s.n;
+  document.getElementById('stageSub').textContent=`Level ${st+1} · ${S.xp} XP`+(S.vit<35?' · needs care':'');
+  const pct=nx?((S.xp-s.xp)/(nx.xp-s.xp))*100:100;
+  document.getElementById('xpBar').style.width=pct+'%';
+  document.getElementById('xpTxt').textContent=nx?`${S.xp-s.xp} / ${nx.xp-s.xp}`:'Max form';
+  document.getElementById('vitBar').style.width=S.vit+'%';
+  document.getElementById('vitBar').style.background=S.vit<35?'linear-gradient(90deg,#f87171,#fb923c)':'linear-gradient(90deg,#34d399,#4ade80)';
+  document.getElementById('vitTxt').textContent=Math.round(S.vit)+'%';
+  document.getElementById('sStreak').textContent=streak();
+  document.getElementById('sBest').textContent=Math.max(S.best,streak());
+  const won=S.urges.filter(u=>u.won).length;
+  document.getElementById('sBeaten').textContent=won;
+  document.getElementById('quote').textContent='"'+QUOTES[dayNo(now())%QUOTES.length]+'"';
+  renderInsights(); renderPartner();
+}
+function renderInsights(){
+  const all=S.urges, c={};
+  all.forEach(u=>u.trig.forEach(t=>c[t]=(c[t]||0)+1));
+  const ent=Object.entries(c).sort((a,b)=>b[1]-a[1]),mx=ent.length?ent[0][1]:1;
+  document.getElementById('trigBars').innerHTML=ent.length?ent.map(([k,v])=>`<div class="hbar"><span>${k}</span><div class="t"><div style="width:${v/mx*100}%"></div></div><span>${v}</span></div>`).join(''):'<p class="muted">Log an urge to start seeing your patterns.</p>';
+  const h=Array(24).fill(0);all.forEach(u=>h[new Date(u.t).getHours()]++);const hm=Math.max(1,...h);
+  document.getElementById('hours').innerHTML=h.map(v=>`<div style="height:${v/hm*100}%"></div>`).join('');
+  const won=all.filter(u=>u.won).length;
+  document.getElementById('iRate').textContent=all.length?Math.round(won/all.length*100)+'%':'–';
+  document.getElementById('iTotal').textContent=all.length;
+  document.getElementById('iRel').textContent=S.slips.length;
+  const ev=[...all.map(u=>({t:u.t,txt:u.trig.join(', ')||'Urge',w:u.won})),...S.slips.map(t=>({t,txt:'Slip — fresh start',w:null}))].sort((a,b)=>b.t-a.t).slice(0,15);
+  document.getElementById('history').innerHTML=ev.length?ev.map(e=>`<div class="hist"><div><div>${e.txt}</div><small class="muted">${new Date(e.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</small></div>${e.w===null?'<span class="tag l">reset</span>':e.w?'<span class="tag w">beaten</span>':'<span class="tag l">lost</span>'}</div>`).join(''):'<p class="muted">Nothing yet.</p>';
+}
+function shareMsg(){const st=stageIdx();return `My Ascend avatar is a ${STAGES[st].n} (level ${st+1}) at ${Math.round(S.vit)}% vitality. ${S.vit<35?'Rough patch — a check-in would help.':'Going strong.'}`}
+function renderPartner(){document.getElementById('avatarMini').setAttribute('viewBox',viewBoxFor());document.getElementById('avatarMini').innerHTML=avatarSVG(stageIdx(),S.vit,true);document.getElementById('avatarMini').style.filter=document.getElementById('avatar').style.filter;document.getElementById('shareText').textContent=shareMsg()}
+function copyShare(){navigator.clipboard.writeText(shareMsg()).then(()=>toast('Copied — paste it to your partner')).catch(()=>toast('Copy not allowed here — select the text instead'))}
+
+// ---------- nav ----------
+function go(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById('v-'+v).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));window.scrollTo(0,0)}
+
+// ---------- modal helpers ----------
+const sheet=document.getElementById('sheet'),modal=document.getElementById('modal');
+function openModal(h){sheet.innerHTML=h;modal.classList.add('show')}
+function closeModal(){modal.classList.remove('show');clearInterval(timerId);busy=false}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2600)}
+
+// ---------- urge flow ----------
+let cur={trig:[]},timerId;
+function openUrge(){
+  cur={trig:[],t:now()};
+  openModal(`<h2>Hold on. You've got this.</h2><p class="muted" style="margin-bottom:14px">Urges usually peak and fade within 10–15 minutes. First — what's going on?</p>
+  <h3>Triggers</h3><div class="chips">${TRIGGERS.map(t=>`<button class="chip" onclick="this.classList.toggle('sel')">${t}</button>`).join('')}</div>
+  <button class="btn pri full" onclick="pickEx()">Next: beat it →</button>`);
+}
+function pickEx(){
+  cur.trig=[...sheet.querySelectorAll('.chip.sel')].map(c=>c.textContent);
+  openModal(`<h2>Pick a reset</h2><p class="muted" style="margin-bottom:14px">Do one now. Your avatar is with you.</p>
+  <button class="ex" onclick="breathe()"><span class="e">🌬️</span><span><b>Box breathing</b><small>2 minutes · calms the body</small></span></button>
+  <button class="ex" onclick="task('💪','Push-ups','Do 20 push-ups (or as many as you can). Feel the burn replace the urge.',60)"><span class="e">💪</span><span><b>Push-ups</b><small>1 minute · burns the energy</small></span></button>
+  <button class="ex" onclick="task('💧','Cold water','Go splash cold water on your face and wrists. Drink a full glass.',60)"><span class="e">💧</span><span><b>Cold water</b><small>1 minute · shocks the reset</small></span></button>
+  <button class="ex" onclick="task('🚶','Leave the room','Get up and walk somewhere with other people or outside. Leave your phone behind if you can.',300)"><span class="e">🚶</span><span><b>Leave the room</b><small>5 minutes · change the scene</small></span></button>
+  <button class="ex" onclick="ride()"><span class="e">🌊</span><span><b>Urge surfing</b><small>3 minutes · watch it pass</small></span></button>`);
+}
+function runTimer(sec,el,done){busy=true;let r=sec;const f=()=>{el.textContent=`${Math.floor(r/60)}:${String(r%60).padStart(2,'0')}`};f();timerId=setInterval(()=>{r--;f();if(r<=0){clearInterval(timerId);busy=false;done()}},1000)}
+function breathe(){
+  openModal(`<h2 class="center">Box breathing</h2><div class="breath" id="br">Inhale</div><div class="timer" id="tm"></div><p class="muted center">Follow the circle: in 4 · hold 4 · out 4 · hold 4</p><div style="height:12px"></div><button class="btn full" onclick="clearInterval(timerId);clearInterval(bi);finish()">I'm done early</button>`);
+  const b=document.getElementById('br'),ph=[['Inhale',1.35],['Hold',1.35],['Exhale',.8],['Hold',.8]];let i=0;
+  const step=()=>{b.textContent=ph[i][0];b.style.transform=`scale(${ph[i][1]})`;i=(i+1)%4};step();window.bi=setInterval(step,4000);
+  runTimer(120,document.getElementById('tm'),()=>{clearInterval(bi);finish()});
+}
+function task(e,t,d,sec){openModal(`<div class="center" style="font-size:54px">${e}</div><h2 class="center">${t}</h2><p class="muted center" style="margin-bottom:10px">${d}</p><div class="timer" id="tm"></div><div style="height:14px"></div><button class="btn full" onclick="clearInterval(timerId);finish()">Done</button>`);runTimer(sec,document.getElementById('tm'),finish)}
+function ride(){
+  const lines=['Notice the urge. Don\'t fight it — just observe.','Where do you feel it in your body?','Rate it 1–10 in your head.','Breathe into that spot. Let it be there.','Notice: it\'s already changing.','Like a wave, it rose. Now watch it fall.','You are not the urge. You\'re the one watching it.'];
+  openModal(`<div class="center" style="font-size:54px">🌊</div><h2 class="center">Urge surfing</h2><p class="center" id="rl" style="min-height:52px;margin:12px 0;font-size:17px;line-height:1.5"></p><div class="timer" id="tm"></div><div style="height:14px"></div><button class="btn full" onclick="clearInterval(timerId);clearInterval(ri);finish()">Done</button>`);
+  let i=0;const rl=document.getElementById('rl');const s=()=>{rl.textContent=lines[i%lines.length];i++};s();window.ri=setInterval(s,26000);
+  runTimer(180,document.getElementById('tm'),()=>{clearInterval(ri);finish()});
+}
+function finish(){
+  busy=false;
+  openModal(`<h2 class="center">How's the urge now?</h2><p class="muted center" style="margin-bottom:16px">Be honest — both answers help you learn.</p>
+  <button class="btn good full" style="margin-bottom:10px" onclick="result(true)">I beat it 💪</button>
+  <button class="btn full" style="margin-bottom:10px" onclick="pickEx()">Still strong — try another reset</button>
+  <button class="btn full" style="color:var(--bad)" onclick="result(false)">I gave in</button>`);
+}
+function result(won){
+  S.urges.push({t:cur.t,trig:cur.trig,won});
+  if(won){S.xp+=20;S.vit=Math.min(100,S.vit+4);save();closeModal();render();const a=document.getElementById('avatar');a.classList.remove('celebrate');void a.offsetWidth;a.classList.add('celebrate');toast('+20 XP — your avatar grew stronger')}
+  else{save();doRelapse()}
+}
+
+// ---------- relapse ----------
+function openRelapse(){openModal(`<h2>It's okay. Really.</h2><p class="muted" style="margin-bottom:16px">A slip doesn't erase your progress. Your streak restarts, your avatar loses some energy — but it keeps its form and most of its XP.</p>
+  <button class="btn pri full" style="margin-bottom:10px" onclick="doRelapse()">Log it & start fresh</button><button class="btn full" onclick="closeModal()">Cancel</button>`)}
+function doRelapse(){
+  S.best=Math.max(S.best,streak());
+  const lost=Math.round(S.xp*.15);S.xp-=lost;S.vit=Math.max(10,S.vit-35);
+  S.start=now();S.lastTick=now();S.slips.push(now());save();render();
+  openModal(`<div class="center" style="font-size:48px">🌱</div><h2 class="center">Fresh start</h2><p class="muted center" style="margin-bottom:8px">You kept ${S.xp} XP (lost ${lost}). Your avatar is tired but still here.</p>
+  <p class="center" style="margin-bottom:18px">One question: what will you do differently next time this trigger shows up?</p>
+  <input id="plan" placeholder="e.g. phone stays outside the bedroom"><button class="btn pri full" onclick="closeModal();toast('Plan noted. Day 1 starts now.')">Begin day 1</button>`);
+}
+
+// ---------- settings ----------
+function setPin(){const v=document.getElementById('pinIn').value;if(!/^\d{4}$/.test(v))return toast('PIN must be 4 digits');S.pin=v;save();document.getElementById('pinIn').value='';toast('PIN saved')}
+function clearPin(){S.pin=null;save();toast('PIN removed')}
+function skip(d){S.offset+=d;render();toast(`Skipped ahead ${d} day${d>1?'s':''}`)}
+function askReset(){openModal(`<h2>Reset everything?</h2><p class="muted" style="margin-bottom:16px">This erases your avatar, XP, history and PIN on this device.</p><button class="btn full" style="color:var(--bad);margin-bottom:10px" onclick="S=fresh();save();closeModal();render();toast('Reset done')">Yes, reset</button><button class="btn full" onclick="closeModal()">Cancel</button>`)}
+
+// ---------- lock ----------
+let entry='';
+function buildLock(){
+  const keys=[1,2,3,4,5,6,7,8,9,'',0,'⌫'];
+  document.getElementById('pad').innerHTML=keys.map(k=>k===''?'<span></span>':`<button onclick="key('${k}')">${k}</button>`).join('');
+}
+function key(k){
+  if(k==='⌫')entry=entry.slice(0,-1);else if(entry.length<4)entry+=k;
+  document.querySelectorAll('#dots i').forEach((d,i)=>d.classList.toggle('f',i<entry.length));
+  if(entry.length===4){if(entry===S.pin){document.getElementById('lock').classList.remove('show')}else{toast('Wrong PIN');}entry='';setTimeout(()=>document.querySelectorAll('#dots i').forEach(d=>d.classList.remove('f')),200)}
+}
+
+// ---------- live clock ----------
+const MILESTONES=[1,3,7,14,21,30,45,60,90,120,180,270,365,500,730,1000];
+let lastDay=-1;
+function clock(){
+  const ms=Math.max(0,now()-S.start),sec=Math.floor(ms/1000);
+  const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60),x=sec%60,p=n=>String(n).padStart(2,'0');
+  cD.textContent=d;cH.textContent=p(h);cM.textContent=p(m);cS.textContent=p(x);
+  const next=MILESTONES.find(v=>v>d)||d+365,prev=[0,...MILESTONES].filter(v=>v<=d).pop();
+  const pct=Math.min(100,(ms/DAY-prev)/(next-prev)*100);
+  msTxt.textContent=`Next milestone: ${next} day${next>1?'s':''}`;msPct.textContent=Math.floor(pct)+'%';msBar.style.width=pct+'%';
+  sinceTxt.textContent='Since '+new Date(S.start).toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  if(d!==lastDay){if(lastDay!==-1){render();if(MILESTONES.includes(d))toast(`🏆 ${d} day${d>1?'s':''} clean! Milestone reached.`)}lastDay=d}
+}
+function editStart(){
+  const v=new Date(S.start-new Date(S.start).getTimezoneOffset()*6e4).toISOString().slice(0,16);
+  openModal(`<h2>When did your streak start?</h2><p class="muted" style="margin-bottom:14px">Already clean before installing? Set the date and time of your last slip — the app will count from there and award the XP for those days.</p>
+  <input type="datetime-local" id="startIn" value="${v}"><button class="btn pri full" onclick="saveStart()">Save</button>`);
+}
+function saveStart(){
+  const t=new Date(document.getElementById('startIn').value).getTime();
+  if(isNaN(t))return toast('Pick a valid date');
+  if(t>now())return toast('Start can\'t be in the future');
+  if(t<S.start){const ex=Math.floor((S.start-t)/DAY);S.xp+=ex*12;S.vit=Math.min(100,S.vit+ex*6)}S.start=t;S.lastTick=t+Math.floor((Math.max(S.lastTick,t)-t)/DAY)*DAY;
+  save();closeModal();lastDay=-1;render();clock();toast('Counting from '+new Date(t).toLocaleDateString());
+}
+
+// ---------- avatar picker ----------
+function pickerHTML(){
+  const st=S.style||'man',sk=S.skin??1;
+  const opt=(k,l)=>`<button class="pick ${st===k?'sel':''}" onclick="setStyle('${k}')"><svg viewBox="${viewBoxFor(k)}">${avatarSVG(2,80,true,k)}</svg>${l}</button>`;
+  return `<div class="row" style="margin-bottom:14px">${opt('man','Man')}${opt('woman','Woman')}${opt('spirit','Spirit')}</div>
+  ${st==='spirit'?'':`<h3>Skin tone</h3><div class="row" style="justify-content:center;gap:12px">${SKINS.map((c,i)=>`<div class="swatch ${sk===i?'sel':''}" style="background:${c}" onclick="setSkin(${i})"></div>`).join('')}</div>`}`;
+}
+function refreshPickers(){document.getElementById('avatarPicker').innerHTML=pickerHTML();const o=document.getElementById('obPick');if(o)o.innerHTML=pickerHTML()}
+function setStyle(k){S.style=k;save();render();refreshPickers()}
+function setSkin(i){S.skin=i;save();render();refreshPickers()}
+function onboard(){
+  if(!S.style)S.style='man';
+  openModal(`<h2 class="center">Choose your avatar</h2><p class="muted center" style="margin-bottom:14px">It starts plain and grows stronger, fitter and more confident with every clean day. You can change this later in Settings.</p><div id="obPick">${pickerHTML()}</div><div style="height:16px"></div><button class="btn pri full" onclick="S.onboarded=true;save();closeModal()">Start my journey</button>`);
+}
+
+// ---------- init ----------
+load();buildLock();
+if(S.pin)document.getElementById('lock').classList.add('show');
+render();refreshPickers();
+if(!S.onboarded)onboard();setInterval(render,60000);clock();setInterval(clock,1000);
+</script>
+</body>
+</html>
